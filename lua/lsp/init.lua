@@ -7,6 +7,7 @@ require('lsp.lsp')
 require("lsp.fortls")
 require("lsp.lua_ls")
 require("lsp.pyright")
+require("lsp.clangd")
 
 
 
