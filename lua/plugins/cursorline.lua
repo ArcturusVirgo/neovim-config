@@ -4,9 +4,9 @@ return {
     opts = {
         cursorline = {
             enable = true,
-            timeout = 1000, -- 设置高亮持续时间，单位为毫秒
-            number = false, -- 是否在光标行显示行号
-            virtual_text = false, -- 是否在光标行显示虚拟文本
+            timeout = 10, -- 设置高亮持续时间，单位为毫秒
+            number = true, -- 是否在光标行显示行号
+            virtual_text = true, -- 是否在光标行显示虚拟文本
         },
         cursorword = {
             enable = true,
