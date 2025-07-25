@@ -1,43 +1,36 @@
 return {
-    "mfussenegger/nvim-lint",
-    config = function()
-        vim.notify("Loading fortran linting", 3, {
-            title = "LazyVim"
-        })
-        local lint = require("lint")
+	"mfussenegger/nvim-lint",
+	event = { "BufWritePost", "InsertLeave" },
+	config = function()
+		local lint = require "lint"
+		local gfortran_diagnostic_args = { "-Wall", "-Wextra", "-fmax-errors=5" }
 
-        local pattern = [[^([^:]+):(%d+):(%d+):%s+([^:]+):%s+(.*)$]]
-        local groups = { "file", "lnum", "col", "severity", "message" }
-        local severity_map = {
-            ["error"] = vim.diagnostic.severity.ERROR,
-            ["warning"] = vim.diagnostic.severity.WARN,
-            ["performance"] = vim.diagnostic.severity.WARN,
-            ["style"] = vim.diagnostic.severity.INFO,
-            ["information"] = vim.diagnostic.severity.INFO
-        }
-        local defaults = {
-            ["source"] = "fortran"
-        }
-        lint.linters.gfortran = {
-            name = "gfortran",
-            cmd = "gfortran",
-            args = {"-c", "-Wunused-variable", "-Wunused-dummy-argument", "-Wall" , "-fsyntax-only", "-cpp",  "-fdiagnostics-plain-output"
-            --   "-I",
-            --   os.getenv("HOME") .. "/.easifem/install/easifem/extpkgs/include/",
-            --   os.getenv("HOME") .. "/.easifem/install/easifem/extpkgs/include/toml-f/modules/",
-            --   os.getenv("HOME") .. "/.easifem/install/easifem/base/include/",
-            --   os.getenv("HOME") .. "/.easifem/install/easifem/classes/include/",
-            --   os.getenv("HOME") .. "/.easifem/ide/include/",
-            --   "-J",
-            --   os.getenv("HOME") .. "/.easifem/ide/include/",
-            }, -- args to pass to the linter
-            ignore_exitcode = true, -- set this to true if you don't want to show error messages
-            stream = "both", -- set this to "stdout" if the output is not an error, for example with luac
-            parser = require("lint.parser").from_pattern(pattern, groups, severity_map, defaults)
-        }
+		lint.linters_by_ft = {
+			fortran = {
+				"gfortran",
+			},
+		}
 
-        lint.linters_by_ft = {
-            fortran = {"gfortran"}
-        }
-    end
+		local pattern = "^([^:]+):(%d+):(%d+):%s+([^:]+):%s+(.*)$"
+		local groups = { "file", "lnum", "col", "severity", "message" }
+		local severity_map = {
+			["Error"] = vim.diagnostic.severity.ERROR,
+			["Warning"] = vim.diagnostic.severity.WARN,
+		}
+		local defaults = { ["source"] = "gfortran" }
+
+		local required_args = { "-fsyntax-only", "-fdiagnostics-plain-output" }
+		local args = vim.list_extend(required_args, gfortran_diagnostic_args)
+
+		lint.linters.gfortran = {
+			cmd = "gfortran",
+			stdin = false,
+			append_fname = true,
+			stream = "stderr",
+			env = nil,
+			args = args,
+			ignore_exitcode = true,
+			parser = require("lint.parser").from_pattern(pattern, groups, severity_map, defaults),
+		}
+	end,
 }
